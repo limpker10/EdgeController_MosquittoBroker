@@ -5,18 +5,19 @@ import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
 public class MqttSslClient {
-    private static MqttClient setupClient(String broker) throws Exception {
+    static MqttClient setupClient(String broker) throws Exception {
         // Generar un ID de cliente y crear un nuevo cliente MQTT
         String clientId = MqttClient.generateClientId();
         MemoryPersistence persistence = new MemoryPersistence();
         return new MqttClient(broker, clientId, persistence);
     }
 
-    private static void connectToBroker(MqttClient client, String broker) throws Exception {
+    static void connectToBroker(MqttClient client, String broker) throws Exception {
         // Configurar opciones de conexión
         MqttConnectOptions connOpts = new MqttConnectOptions();
         connOpts.setHttpsHostnameVerificationEnabled(false);
-        connOpts.setSocketFactory(SSLUtils.getSingleSocketFactory("mqttCA.crt"));
+        //connOpts.setSocketFactory(SSLUtils.getSingleSocketFactory("mqttCA.crt"));
+        connOpts.setSocketFactory(SSLUtils.getAWSIotSocketFactory("Certificate.crt","Certi",""));
 
         // Establecer callback y conectar
         client.setCallback(new DataControllerCallback());
@@ -25,7 +26,7 @@ public class MqttSslClient {
         System.out.println("Connected to broker: " + broker);
     }
 
-    private static void subscribeToTopic(MqttClient client, String topic, int qos) throws Exception {
+    static void subscribeToTopic(MqttClient client, String topic, int qos) throws Exception {
         // Suscribirse al topico
         client.subscribe(topic, qos);
         System.out.println("Subscribed to topic: " + topic);
@@ -39,14 +40,14 @@ public class MqttSslClient {
     }
 
     public static void main(String[] args) {
-        String topic = "paho/sub";
+        String topic = "esp8266/pub";
         int qos = 1;
         String broker = "ssl://192.168.1.13:8883";
 
         try {
-            MqttClient client = setupClient(broker);
-            connectToBroker(client, broker);
-            subscribeToTopic(client, topic, qos);
+            MqttClient client = MqttSslClient.setupClient(broker);
+            MqttSslClient.connectToBroker(client, broker);
+            MqttSslClient.subscribeToTopic(client, topic, qos);
 
         } catch (Exception e) {
             throw new RuntimeException(e);

@@ -8,6 +8,9 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import org.json.JSONObject;
+
+import static java.time.LocalDateTime.*;
 
 public class DataControllerCallback implements MqttCallback {
 
@@ -31,39 +34,49 @@ public class DataControllerCallback implements MqttCallback {
 
     private void processTemperatureData(String payload) {
         try {
-            // Supongamos que el payload es un string con temperatura y humedad separados por coma
-            String[] values = payload.split(",");
-            float temperature = Float.parseFloat(values[0]);
-            float humidity = Float.parseFloat(values[1]);
-            // Agrega aquí la lógica para obtener otros valores del payload si es necesario
+            // Convertir el string payload a un objeto JSON
+            JSONObject jsonPayload = new JSONObject(payload);
 
-            System.out.println("Temperature from DHT11 sensor: " + temperature + "°C");
-            System.out.println("Humidity from DHT11 sensor: " + humidity + "%");
+            // Extraer los valores del objeto JSON
+            double humidity = jsonPayload.getDouble("humidity");
+            double temperature = jsonPayload.getDouble("temperature");
+            String unitHumidity = jsonPayload.getString("UnitHumidity");
+            String unitTemperature = jsonPayload.getString("UnitTemperature");
+            String notes = jsonPayload.getString("Notes");
 
-            // Guardar en la base de datos independientemente del rango
-            saveTemperatureData(temperature, humidity);
+            System.out.println("Temperature: " + temperature + unitTemperature);
+            System.out.println("Humidity: " + humidity + unitHumidity);
+
+            // Guardar en la base de datos
+            saveTemperatureData(temperature, humidity, unitHumidity, unitTemperature, notes);
 
             // Verificar rango de temperatura
-            if (temperature < 10 || temperature > 24) {
-                System.out.println("Temperatura fuera de rango normal: " + temperature + "°C");
+            if (temperature < 10 || temperature > 25) {
+                System.out.println("Temperatura fuera de rango normal: " + temperature + unitTemperature);
             }
 
-        } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
+        } catch (Exception e) {
             System.err.println("Error processing temperature data: " + e.getMessage());
         }
     }
 
-    private void saveTemperatureData(float temperature, float humidity) {
+    private void saveTemperatureData(double temperature, double humidity, String unitHumidity, String unitTemperature, String notes) {
         String url = "jdbc:mysql://localhost:3306/SensorData?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC";
         String user = "root";
         String password = "mysqladmin";
 
         try {
             Connection conn = DriverManager.getConnection(url, user, password);
-            String query = "INSERT INTO DHT11Data (temperature, humidity, timestamp) VALUES (?, ?, CURRENT_TIMESTAMP)";
+            // Modificar la consulta para incluir los nuevos campos
+            String query = "INSERT INTO DHT11Data (temperature,unitTemperature, humidity, unitHumidity, notes, recordTime) VALUES (?, ?, ?, ?, ?, ?)";
             PreparedStatement preparedStmt = conn.prepareStatement(query);
-            preparedStmt.setFloat(1, temperature);
-            preparedStmt.setFloat(2, humidity);
+            preparedStmt.setDouble(1, temperature);
+            preparedStmt.setString(2, unitTemperature);
+            preparedStmt.setDouble(3, humidity);
+            preparedStmt.setString(4, unitHumidity);
+            preparedStmt.setString(5, notes);
+            preparedStmt.setString(6, now().toString());
+
             preparedStmt.execute();
             conn.close();
         } catch (SQLException e) {
