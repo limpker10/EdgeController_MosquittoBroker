@@ -80,7 +80,7 @@ public class SSLUtils {
             TrustManagerFactory tmf = TrustManagerFactory.getInstance("X509");
             tmf.init(caKs);
 
-            // Client key and certificates are sent to server so it can authenticate us
+            // Client key and certificates are sent to server  it can authenticate us
             KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
             ks.load(null, null);
             ks.setCertificateEntry("certificate", cert);
