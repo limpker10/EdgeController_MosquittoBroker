@@ -68,6 +68,7 @@ public class MqttSslClient {
 
     }
 
+
     private static void disconnectFromBroker(MqttClient client, String broker) throws Exception {
         // Desconectar del broker
         System.out.println("Disconnecting from broker: " + broker);
@@ -75,28 +76,31 @@ public class MqttSslClient {
         System.out.println("Disconnected from broker: " + broker);
     }
 
-    public static void main(String[] args) {
-        String topicMosquitto = "esp8266/mosquitto";
-        String topicAWS = "esp8266/aws";
-        MqttSslClient mosquittoSslClient = new MqttSslClient();
-        MqttSslClient AWSSslClient = new MqttSslClient();
-        int qos = 1;
-        String brokerMosquitto = "ssl://192.168.1.13:8883";
-        String brokerAWS = "ssl://ajc0lzc2wmskx-ats.iot.us-east-2.amazonaws.com";
-
-        try {
-            MqttClient clientMosquitto = mosquittoSslClient.setupClient(brokerMosquitto);
-            mosquittoSslClient.connectToBrokerAWS(clientMosquitto, brokerMosquitto);
-            mosquittoSslClient.connectToBrokerMosquitto(clientMosquitto, brokerMosquitto);
-            mosquittoSslClient.subscribeToTopic(clientMosquitto, topicMosquitto, qos);
-
-            MqttClient clientAws = AWSSslClient.setupClient(brokerAWS);
-            mosquittoSslClient.connectToBrokerAWS(clientAws, brokerAWS);
-            mosquittoSslClient.connectToBrokerMosquitto(clientAws, brokerAWS);
-            mosquittoSslClient.subscribeToTopic(clientAws, topicAWS, qos);
-
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
+//    public static void main(String[] args) {
+//        String topicMosquitto = "esp8266/mosquitto";
+//        String topicAWS = "mosquitto/aws";
+//        MqttSslClient mosquittoSslClient = new MqttSslClient();
+//        MqttSslClient AWSSslClient = new MqttSslClient();
+//        int qos = 1;
+//        int qosAWS = 1;
+//        String brokerMosquitto = "ssl://192.168.1.13:8883";
+//        String brokerAWS = "ssl://ajc0lzc2wmskx-ats.iot.us-east-2.amazonaws.com";
+//
+//        try {
+//            MqttClient clientMosquitto = mosquittoSslClient.setupClient(brokerMosquitto);
+//            mosquittoSslClient.connectToBrokerMosquitto(clientMosquitto, brokerMosquitto);
+//            //mosquittoSslClient.connectToBrokerMosquitto(clientMosquitto, brokerMosquitto);
+//            mosquittoSslClient.subscribeToTopic(clientMosquitto, topicMosquitto, qos);
+//
+//            MqttClient clientAws = AWSSslClient.setupClient(brokerAWS);
+//            mosquittoSslClient.connectToBrokerAWS(clientAws, brokerAWS);
+//            //mosquittoSslClient.connectToBrokerMosquitto(clientAws, brokerAWS);
+//            mosquittoSslClient.publishToTopic(clientAws, topicAWS, Controller.processTemperatureData(),qosAWS);
+//
+//
+//
+//        } catch (Exception e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
 }
