@@ -12,7 +12,8 @@ import static java.time.LocalDateTime.*;
 
 public class DataControllerCallback implements MqttCallback {
 
-    private MqttClient client = App.AWSClient();
+    private final MqttClient client = App.AWSClient();
+    private double lastPublishedTemperature = Double.MIN_VALUE;
     @Override
     public void connectionLost(Throwable cause) {
         System.out.println("connection lost .... : " + cause.getMessage());
@@ -48,16 +49,21 @@ public class DataControllerCallback implements MqttCallback {
             System.out.println("Temperature: " + temperature + unitTemperature);
             System.out.println("Humidity: " + humidity + unitHumidity);
 
-            // Guardar en la base de datos
-            // saveTemperatureData(temperature, humidity, unitHumidity, unitTemperature, notes, timestamp);
+            // Verificar rango de temperatura y si es una temperatura repetida en un rango de +/- 5
+            if ((temperature < 10.05 || temperature > 25.89) &&
+                    (lastPublishedTemperature == Double.MIN_VALUE || Math.abs(temperature - lastPublishedTemperature) > 0.5)) {
 
-            // Verificar rango de temperatura
-            if (temperature < 10 || temperature > 26) {
-                System.out.println("Temperatura fuera de rango normal: " + temperature + unitTemperature);
-                saveTemperatureData(temperature, humidity, unitHumidity, unitTemperature, notes, timestamp);
+                // Actualiza la última temperatura publicada
+                lastPublishedTemperature = temperature;
+
+                // Aquí puedes llamar a saveTemperatureData si es necesario
+                // saveTemperatureData(temperature, humidity, unitHumidity, unitTemperature, notes, timestamp);
+
+                // Publica el mensaje
+                publishToTopic("mosquitto/aws", payload, 1);
+            } else {
+                System.out.println("Temperatura dentro del rango aceptable o repetida en un rango de +/- 5 grados. No se publica.");
             }
-            //return jsonPayload;
-            publishToTopic("mosquitto/aws", payload, 1);
         } catch (Exception e) {
             System.err.println("Error processing temperature data: " + e.getMessage());
         }

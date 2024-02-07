@@ -20,13 +20,8 @@ public class MqttSslClient {
         // Configurar opciones de conexión
         MqttConnectOptions connOpts = new MqttConnectOptions();
         connOpts.setHttpsHostnameVerificationEnabled(false);
-//        if (!isBrokerInMap(broker)) {
-//            throw new Exception("No existe el broker enviado");
-//        }
         connOpts.setSocketFactory(SSLUtils.getSingleSocketFactory("mqttCA.crt"));
-        //connOpts.setSocketFactory(SSLUtils.getAWSIotSocketFactory("AmazonRootCA1.pem","Certificate.crt","private.key"));
         // Establecer callback y conectar
-
         client.setCallback(new DataControllerCallback());
         System.out.println("Connecting to broker: " + broker);
         client.connect(connOpts);
@@ -36,16 +31,13 @@ public class MqttSslClient {
         // Configurar opciones de conexión
         MqttConnectOptions connOpts = new MqttConnectOptions();
         connOpts.setHttpsHostnameVerificationEnabled(false);
-//        if (!isBrokerInMap(broker)) {
-//            throw new Exception("No existe el broker enviado");
-//        }
-        //connOpts.setSocketFactory(SSLUtils.getSingleSocketFactory("mqttCA.crt"));
         connOpts.setSocketFactory(SSLUtils.getAWSIotSocketFactory("AmazonRootCA1.pem","Certificate.crt","private.key"));
         // Establecer callback y conectar
         client.setCallback(new AWSControllerCallback());
         System.out.println("Connecting to broker: " + broker);
         client.connect(connOpts);
         System.out.println("Connected to broker: " + broker);
+        subscribeToTopic(client,"aws/sub",1);
     }
 
     private boolean isBrokerInMap(String brokerUrl) {
@@ -76,31 +68,4 @@ public class MqttSslClient {
         System.out.println("Disconnected from broker: " + broker);
     }
 
-//    public static void main(String[] args) {
-//        String topicMosquitto = "esp8266/mosquitto";
-//        String topicAWS = "mosquitto/aws";
-//        MqttSslClient mosquittoSslClient = new MqttSslClient();
-//        MqttSslClient AWSSslClient = new MqttSslClient();
-//        int qos = 1;
-//        int qosAWS = 1;
-//        String brokerMosquitto = "ssl://192.168.1.13:8883";
-//        String brokerAWS = "ssl://ajc0lzc2wmskx-ats.iot.us-east-2.amazonaws.com";
-//
-//        try {
-//            MqttClient clientMosquitto = mosquittoSslClient.setupClient(brokerMosquitto);
-//            mosquittoSslClient.connectToBrokerMosquitto(clientMosquitto, brokerMosquitto);
-//            //mosquittoSslClient.connectToBrokerMosquitto(clientMosquitto, brokerMosquitto);
-//            mosquittoSslClient.subscribeToTopic(clientMosquitto, topicMosquitto, qos);
-//
-//            MqttClient clientAws = AWSSslClient.setupClient(brokerAWS);
-//            mosquittoSslClient.connectToBrokerAWS(clientAws, brokerAWS);
-//            //mosquittoSslClient.connectToBrokerMosquitto(clientAws, brokerAWS);
-//            mosquittoSslClient.publishToTopic(clientAws, topicAWS, Controller.processTemperatureData(),qosAWS);
-//
-//
-//
-//        } catch (Exception e) {
-//            throw new RuntimeException(e);
-//        }
-//    }
 }
